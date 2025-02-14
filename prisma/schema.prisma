@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+model WorkOrder {
+    id        Int      @id @default(autoincrement()) @unique
+    nickName  String @unique
+    scopeOfWork String
+    budget      Decimal @default(0)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    customerId Int
+    customer Customer @relation(fields: [customerId], references: [id])
+    vendors     WorkOrderVendor[]
+
+    @@index([id, nickName])
+}
+
+
+model Customer {
+    id        Int      @id @default(autoincrement()) @unique
+    companyName      String
+    contactName String
+    addressLine1 String
+    addressLine2 String
+    city String
+    state String
+    zip String
+    country String
+    phone String
+    email String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([id])
+    WorkOrder WorkOrder[]
+}
+
+model Vendor {
+    id        Int      @id @default(autoincrement()) @unique
+    companyName      String
+    contactName String
+    addressLine1 String
+    addressLine2 String
+    city String
+    state String
+    zip String
+    country String
+    phone String
+    email String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    workOrders  WorkOrderVendor[]
+
+    @@index([id])
+}
+
+
+model WorkOrderVendor {
+    id          Int      @id @default(autoincrement())
+    workOrderId Int
+    vendorId    Int
+    assignedAt  DateTime @default(now())
+
+    workOrder   WorkOrder @relation(fields: [workOrderId], references: [id])
+    vendor      Vendor    @relation(fields: [vendorId], references: [id])
+
+    @@unique([workOrderId, vendorId])
+    @@index([workOrderId])
+    @@index([vendorId])
+}
